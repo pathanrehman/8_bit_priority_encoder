@@ -10,12 +10,11 @@ from cocotb.triggers import ClockCycles
 async def test_project(dut):
     dut._log.info("Start")
 
-    # Set the clock period to 10 us (100 KHz)
+    # Set clock (10 us period)
     clock = Clock(dut.clk, 10, units="us")
     cocotb.start_soon(clock.start())
 
     # Reset
-    dut._log.info("Reset")
     dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
@@ -23,18 +22,19 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
     dut.rst_n.value = 1
 
-    dut._log.info("Test project behavior")
+    # Apply test input
+    dut.ui_in.value = 20  # binary 00010100, highest set bit is bit 4
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
-
-    # Wait for one clock cycle to see the output values
     await ClockCycles(dut.clk, 1)
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
+    # Expected output for input 4 (bit 4 set) is 7'b1001100 (active low)
+    expected_seg = 0b1001100
+    # uo_out[7] is always 0, so full 8-bit expected output:
+    expected_uo_out = expected_seg
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    # Check output matches expected 7-seg pattern on bits [6:0]
+    actual_uo_out = dut.uo_out.value.integer & 0x7F  # mask bits 6:0
+
+    assert actual_uo_out == expected_uo_out, \
+        f"Output mismatch: got {actual_uo_out:07b}, expected {expected_uo_out:07b}"
+
