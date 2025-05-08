@@ -23,18 +23,15 @@ async def test_project(dut):
     dut.rst_n.value = 1
 
     # Apply test input
-    dut.ui_in.value = 20  # binary 00010100, highest set bit is bit 4
+    dut.ui_in.value = 20  # 00010100
+await ClockCycles(dut.clk, 3)  # wait longer for output to stabilize
 
-    await ClockCycles(dut.clk, 1)
+actual_uo_out = dut.uo_out.value.integer & 0x7F
+expected_uo_out = 0b1001100  # encoding for digit 4
 
-    # Expected output for input 4 (bit 4 set) is 7'b1001100 (active low)
-    expected_seg = 0b1001100
-    # uo_out[7] is always 0, so full 8-bit expected output:
-    expected_uo_out = expected_seg
+dut._log.info(f"ui_in={dut.ui_in.value.integer:08b}, uo_out={actual_uo_out:07b}")
 
-    # Check output matches expected 7-seg pattern on bits [6:0]
-    actual_uo_out = dut.uo_out.value.integer & 0x7F  # mask bits 6:0
+assert actual_uo_out == expected_uo_out, \
+    f"Output mismatch: got {actual_uo_out:07b}, expected {expected_uo_out:07b}"
 
-    assert actual_uo_out == expected_uo_out, \
-        f"Output mismatch: got {actual_uo_out:07b}, expected {expected_uo_out:07b}"
 
