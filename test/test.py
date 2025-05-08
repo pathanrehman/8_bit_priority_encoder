@@ -1,10 +1,6 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
-
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
-
 
 @cocotb.test()
 async def test_project(dut):
@@ -24,14 +20,14 @@ async def test_project(dut):
 
     # Apply test input
     dut.ui_in.value = 20  # 00010100
-await ClockCycles(dut.clk, 3)  # wait longer for output to stabilize
 
-actual_uo_out = dut.uo_out.value.integer & 0x7F
-expected_uo_out = 0b1001100  # encoding for digit 4
+    # Wait longer for output to stabilize
+    await ClockCycles(dut.clk, 3)
 
-dut._log.info(f"ui_in={dut.ui_in.value.integer:08b}, uo_out={actual_uo_out:07b}")
+    actual_uo_out = dut.uo_out.value.integer & 0x7F
+    expected_uo_out = 0b1001100  # encoding for digit 4
 
-assert actual_uo_out == expected_uo_out, \
-    f"Output mismatch: got {actual_uo_out:07b}, expected {expected_uo_out:07b}"
+    dut._log.info(f"ui_in={dut.ui_in.value.integer:08b}, uo_out={actual_uo_out:07b}")
 
-
+    assert actual_uo_out == expected_uo_out, \
+        f"Output mismatch: got {actual_uo_out:07b}, expected {expected_uo_out:07b}"
