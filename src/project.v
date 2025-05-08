@@ -1,4 +1,4 @@
-module priority_encoder_decoder_7seg (
+module tt_um_priority_encoder_decoder_7seg (
     input [7:0] in,           // 8-bit input for priority encoder
     output [6:0] seg          // 7-segment display output
 );
